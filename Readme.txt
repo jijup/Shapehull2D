@@ -10,8 +10,6 @@ The program uses CGAL and is tested in CGAL 4.6.
    
   ./TestShapeHull filename.txt
  
- 3. Run the program. 
-
- 4. Provide the display size of vertices. Give "1", if it is not relevant to you.
+ 
 
    
