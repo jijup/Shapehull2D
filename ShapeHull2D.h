@@ -1,4 +1,5 @@
 #include <fstream>
+#include <queue>
 #include<stdlib.h>
 #include<time.h>
 #include<ctype.h>
@@ -6,43 +7,20 @@
 //CGAL headers
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include "Delaunay_triangulation_2.h"
-
-
 #include <CGAL/point_generators_2.h>
 
-//Qt headers
-#include <QtGui>
-#include <QString>
-#include <QActionGroup>
-#include <QFileDialog>
-#include <QInputDialog>
+#include <stdlib.h>
+#if defined(__APPLE__)
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 
-// GraphicsView items and event filters (input classes)
-#include "TriangulationCircumcircle.h"
-#include "TriangulationMovingPoint.h"
-#include "TriangulationConflictZone.h"
-#include "TriangulationRemoveVertex.h"
-#include "TriangulationPointInputAndConflictZone.h"
-#include <CGAL/Qt/TriangulationGraphicsItem.h>
-#include <CGAL/Qt/VoronoiGraphicsItem.h>
-#include <CGAL/Qt/MAPGraphicsItem.h>
-#include <CGAL/Qt/ShapeGraphicsItem.h>
-
-
-
-
-//for viewportsBbox
-#include <CGAL/Qt/utility.h>
-  
-//the two base classes
-#include "ui_Delaunay_triangulation_2.h"
-#include <CGAL/Qt/DemosMainWindow.h>
 
 //xtra
 #include <CGAL/IO/Color.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 
-struct timeb t1,t2,t3,t4;
 
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point_2;
@@ -70,14 +48,25 @@ typedef Delaunay::All_edges_iterator	All_edges_iterator;
 typedef Delaunay::Triangle				Triangle;
 typedef Delaunay::Area					Area;
 
+using namespace std;
+struct comparator{
+	bool operator () (const Face_handle lhs, const Face_handle rhs){
+	return lhs->radius<rhs->radius;
+	}
+	};
 
 class ShapeHull2D{
 private:
 Delaunay dt;
-std::vector<int, int> boundary_;
+priority_queue <Face_handle, vector<Face_handle>, comparator> shapepq;
+std::vector<pair<int, int>> boundary_;
+vector<pair<double, double> > points;
+void createPQ();
+void sculpt();
+int getIndex(double x, double y);
 	
 public:
-ShapeHull2D();
-std::vector<int, int> *extractBoundary();
+ShapeHull2D(vector<pair<double, double> > pointVec);
+std::vector<pair<int, int>> *extractBoundary();
 
-}
+};

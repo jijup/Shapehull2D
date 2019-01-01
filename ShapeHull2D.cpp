@@ -1,49 +1,78 @@
 #include "ShapeHull2D.h"
 
+void createDelaunay(Delaunay &dt, vector<pair<double, double> > *pointVec)
+{
 
-ShapeHull2D::ShapeHull2D(){
+	for (int i = 0; i < (int)pointVec->size(); i++)
+	{
+		Point point((*pointVec)[i].first, (*pointVec)[i].second);
+		Vertex_handle vertex = dt.insert(point);
+		
+	}
+
+}
+
+void setCircumRadius(Delaunay &dt){
+
+        Face_iterator fit=dt.finite_faces_begin();
+	do{
+	  Segment_2 seg=Segment_2(fit->vertex(0)->point(),dt.circumcenter(fit));
+
+         dt.set_circum_radius(fit, seg.squared_length());
 	
+	}while(++fit!=dt.finite_faces_end());
+
+}
+
+void ShapeHull2D::createPQ(){
+
+Face_iterator fit=dt.finite_faces_begin();
+	do{
+	for (int i=0; i<3;++i){
+		if(dt.is_infinite(fit->neighbor(i)))
+			{
+				shapepq.push(fit);
+				break;
+			}
+
+	}
+	
+	}while(++fit!=dt.finite_faces_end());
+
 
 }
 
 
-void ShapeHull2D::reconstruct(){
-	
-    std::cout<<"Now I'm going to construct the shape\n"<<"Some coding on due\n";
-	//ftime(&t1);
-	
-	Face_iterator fit=dt.finite_faces_begin();
-	do{
-	//set radius
-	
-	}while(fit!=dt.finite_faces_end());
-	
-	struct comparator{
-	bool operator () (const Face_handle lhs, const Face_handle rhs){
-	return lhs->cradius<rhs->cradius;
-	}
-	}
-	
-	priority_queue <Face_handle, vector<Face_handle>, comparator> shapeq;
-	
-	
-	
-	Face_iterator fit=dt.finite_faces_begin();
-	do{
-	for (int i=0; i<3;++i){
-	}
-	
-	}while(fit!=dt.finite_faces_end());
-	
-	do{
-		ok=0;
-	Face_iterator fit=dt.finite_faces_begin();
-	do
+ShapeHull2D::ShapeHull2D(vector<std::pair<double, double> > pointVec){
+
+points=pointVec;
+//Create Delaunay
+createDelaunay(dt, &pointVec);
+
+//set Circum radius
+setCircumRadius(dt);
+
+//create priority queue
+createPQ();
+
+//create shapehull
+sculpt();
+
+}
+
+
+void ShapeHull2D::sculpt(){ 
+Face_handle top;
+int flag, index;
+while(!shapepq.empty())
+{
+top=shapepq.top();
+shapepq.pop();
+flag=0;
+
+for(int i=0;i<3;i++)
 	{
-	flag=0;
-	for(int i=0;i<3;i++)
-	{
-		if(dt.is_infinite(fit->neighbor(i)))
+		if(dt.is_infinite(top->neighbor(i)))
 		{
 			flag=1;
 			index=i;
@@ -51,23 +80,64 @@ void ShapeHull2D::reconstruct(){
 		}
 	}
 	if(flag)
-	{
-		//std::cout<<"\nCircum center- "<< dt.circumcenter(fit)<<std::endl;
+	{		
 		Face_handle f=Face_handle();
-		if(dt.is_infinite(dt.locate(dt.circumcenter(fit),fit)))
+		if(dt.is_infinite(dt.locate(dt.circumcenter(top),top)))
 		{
-			if(!dt.dangling_edge(fit))
-				if(!dt.junction_point(fit,index))
+			if(!dt.dangling_edge(top) && !dt.junction_point(top,index))
 				{
-					dt.delete_boundary_faces(fit,index);
-					ok=1;
-				}
+shapepq.push(top->neighbor((index+1)%3));
+shapepq.push(top->neighbor((index+2)%3));
+
+
+					dt.delete_boundary_faces(top,index);
+					
+				
 			
 		}
 		
-	}
-	fit++;
-	}while(fit!=dt.finite_faces_end());
-}while(ok);
 
+}  	
+	
+	
+
+}
+}
+}
+
+
+int ShapeHull2D::getIndex(double x, double y)
+{
+	for(int i=0; i<(int)points.size(); ++i)
+	{
+		if (fabs(points[i].first-x)<0.0001 && fabs(points[i].second-y)<0.0001)
+			return i;
+	}
+	
+	return -1;		
+}
+
+
+std::vector<std::pair<int, int>> *ShapeHull2D::extractBoundary(){
+int edges=0;
+Face_iterator fit=dt.finite_faces_begin();
+for(;fit!=dt.finite_faces_end();++fit)
+		{
+			for(int i=0;i<3;i++)
+			{
+				if(dt.is_infinite(fit->neighbor(i)))
+				{
+
+boundary_.push_back(pair<int, int>(getIndex(fit->vertex((i+1)%3)->point().x(),fit->vertex((i+1)%3)->point().y()), getIndex(fit->vertex((i+2)%3)->point().x(),fit->vertex((i+2)%3)->point().y())));
+					
+					edges++;
+				}
+		
+			}
+		}
+
+boundary_.resize(edges);		
+
+
+return &boundary_;
 }
