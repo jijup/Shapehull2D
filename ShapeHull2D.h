@@ -21,7 +21,7 @@
 #include <CGAL/IO/Color.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 
-
+namespace shapehull{
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point_2;
 typedef K::Iso_rectangle_2 Iso_rectangle_2;
@@ -70,3 +70,4 @@ ShapeHull2D(vector<pair<double, double> > pointVec);
 std::vector<pair<int, int>> *extractBoundary();
 
 };
+}

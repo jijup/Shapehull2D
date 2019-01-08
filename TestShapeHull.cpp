@@ -10,6 +10,8 @@
 
 #include "ShapeHull2D.h"
 
+using namespace shapehull;
+
 using namespace std;
 
 
@@ -177,7 +179,7 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
     glutInitWindowSize(250, 250);
-    wd = glutCreateWindow("Voronoi based Curve Reconstruction");
+    wd = glutCreateWindow("Shapehull 2D");
 	
 	
     loadPointSet(filename);	

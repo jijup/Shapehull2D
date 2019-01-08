@@ -1,5 +1,7 @@
 #include "ShapeHull2D.h"
 
+using namespace shapehull;
+
 void createDelaunay(Delaunay &dt, vector<pair<double, double> > *pointVec)
 {
 
